@@ -2,6 +2,21 @@
 
 declare(strict_types=1);
 
+// Rebuilds a PEM key that got mangled when pasted into a hosting panel
+// (surrounding quotes, literal "\n", escaped backslashes, or line breaks turned into spaces).
+$normalizePemKey = static function (mixed $key): ?string {
+    if (! is_string($key) || trim($key) === '') {
+        return null;
+    }
+    $key = str_replace(['\\\\n', '\\n', '\\r', "\r"], ["\n", "\n", '', ''], trim($key, " \t\n\r\0\x0B\"'"));
+    if (preg_match('/-----BEGIN ([A-Z ]+)-----(.*?)-----END \\1-----/s', $key, $m) !== 1) {
+        return $key;
+    }
+    $body = preg_replace('/\\s+/', '', $m[2]) ?? '';
+
+    return "-----BEGIN {$m[1]}-----\n".chunk_split($body, 64, "\n")."-----END {$m[1]}-----\n";
+};
+
 return [
 
     /*
@@ -28,9 +43,9 @@ return [
     |
     */
 
-    'private_key' => env('PASSPORT_PRIVATE_KEY'),
+    'private_key' => $normalizePemKey(env('PASSPORT_PRIVATE_KEY')),
 
-    'public_key' => env('PASSPORT_PUBLIC_KEY'),
+    'public_key' => $normalizePemKey(env('PASSPORT_PUBLIC_KEY')),
 
     /*
     |--------------------------------------------------------------------------
