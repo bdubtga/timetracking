@@ -1,0 +1,81 @@
+# Production stack for Coolify (Build Pack: Docker Compose).
+# The root docker-compose.yml is the local Sail dev setup; this one is for deploying.
+#
+# Coolify fills in the SERVICE_* variables itself (domain, database user/password).
+# You only need to set APP_KEY, PASSPORT_PRIVATE_KEY and PASSPORT_PUBLIC_KEY.
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/coolify/Dockerfile
+    restart: unless-stopped
+    environment:
+      # Coolify: generates a domain and routes it to port 8000
+      - SERVICE_URL_APP_8000
+      - APP_URL=${SERVICE_URL_APP}
+      - APP_FORCE_HTTPS=true
+      - TRUSTED_PROXIES=0.0.0.0/0,2000:0:0:0:0:0:0:0/3
+
+      # Generate with: docker run --rm solidtime/solidtime:0.22.1 php artisan self-host:generate-keys --multi-line
+      - APP_KEY=${APP_KEY:?}
+      - PASSPORT_PRIVATE_KEY=${PASSPORT_PRIVATE_KEY:?}
+      - PASSPORT_PUBLIC_KEY=${PASSPORT_PUBLIC_KEY:?}
+
+      - APP_ENABLE_REGISTRATION=${APP_ENABLE_REGISTRATION:-false}
+      - SUPER_ADMINS=${SUPER_ADMINS:-}
+
+      - AUTO_DB_MIGRATE=true
+      - WITH_SCHEDULER=true
+      - QUEUE_CONNECTION=sync
+      - SESSION_DRIVER=database
+      - FILESYSTEM_DISK=local
+      - PUBLIC_FILESYSTEM_DISK=public
+      - LOG_CHANNEL=stderr
+
+      - DB_CONNECTION=pgsql
+      - DB_HOST=database
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_DATABASE:-timetracking}
+      - DB_USERNAME=${SERVICE_USER_POSTGRES}
+      - DB_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+
+      # Set these to real SMTP details if you want password-reset emails
+      - MAIL_MAILER=${MAIL_MAILER:-log}
+      - MAIL_HOST=${MAIL_HOST:-}
+      - MAIL_PORT=${MAIL_PORT:-587}
+      - MAIL_USERNAME=${MAIL_USERNAME:-}
+      - MAIL_PASSWORD=${MAIL_PASSWORD:-}
+      - MAIL_ENCRYPTION=${MAIL_ENCRYPTION:-tls}
+      - MAIL_FROM_ADDRESS=${MAIL_FROM_ADDRESS:-no-reply@example.com}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME:-Shifts}
+    volumes:
+      - app-storage:/var/www/html/storage
+    depends_on:
+      database:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-fsS', 'http://127.0.0.1:8000/health-check/up']
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+
+  database:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB=${DB_DATABASE:-timetracking}
+      - POSTGRES_USER=${SERVICE_USER_POSTGRES}
+      - POSTGRES_PASSWORD=${SERVICE_PASSWORD_POSTGRES}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  app-storage:
+  db-data:
