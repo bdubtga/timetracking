@@ -2,8 +2,8 @@
 # The root docker-compose.yml is the local Sail dev setup; this one is for deploying.
 #
 # Coolify fills in the SERVICE_* variables itself (database user/password).
-# You set APP_URL, APP_KEY, PASSPORT_PRIVATE_KEY and PASSPORT_PUBLIC_KEY.
-# The app is published on host port APP_PORT (default 8000), for a tunnel to point at.
+# You set APP_KEY, PASSPORT_PRIVATE_KEY and PASSPORT_PUBLIC_KEY.
+# The app is published on host port APP_PORT (default 8012), for a tunnel to point at.
 
 services:
   app:
@@ -13,10 +13,10 @@ services:
     restart: unless-stopped
     # Published on the server so a tunnel (e.g. Cloudflare Tunnel) can point at it
     ports:
-      - '${APP_PORT:-8000}:8000'
+      - '${APP_PORT:-8012}:8000'
     environment:
       # The public https URL your tunnel serves the app on
-      - APP_URL=${APP_URL:?}
+      - APP_URL=${APP_URL:-https://solidtime.benjiwallis.xyz}
       - APP_FORCE_HTTPS=true
       - TRUSTED_PROXIES=0.0.0.0/0,2000:0:0:0:0:0:0:0/3
 
