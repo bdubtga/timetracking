@@ -61,7 +61,7 @@ import { useCommandPalette } from '@/utils/useCommandPalette';
 
 const { openPalette } = useCommandPalette();
 
-// Simplified sidebar: only Shifts, Calendar and Clients are shown.
+// Simplified sidebar: only Shifts, Calendar, Clients and Import / Export are shown.
 // Set to true to bring back every solidtime page (they still work by URL).
 const showAllFeatures = false;
 
@@ -213,6 +213,12 @@ const page = usePage<{
                                 :icon="UserCircleIcon"
                                 :current="route().current('clients')"
                                 :href="route('clients')"></NavigationSidebarItem>
+                            <NavigationSidebarItem
+                                v-if="canUpdateOrganization()"
+                                title="Import / Export"
+                                :icon="ArrowsRightLeftIcon"
+                                :current="route().current('import')"
+                                :href="route('import')"></NavigationSidebarItem>
                         </ul>
                         <ul v-else>
                             <NavigationSidebarItem
