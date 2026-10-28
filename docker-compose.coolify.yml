@@ -1,8 +1,9 @@
 # Production stack for Coolify (Build Pack: Docker Compose).
 # The root docker-compose.yml is the local Sail dev setup; this one is for deploying.
 #
-# Coolify fills in the SERVICE_* variables itself (domain, database user/password).
-# You only need to set APP_KEY, PASSPORT_PRIVATE_KEY and PASSPORT_PUBLIC_KEY.
+# Coolify fills in the SERVICE_* variables itself (database user/password).
+# You set APP_URL, APP_KEY, PASSPORT_PRIVATE_KEY and PASSPORT_PUBLIC_KEY.
+# The app is published on host port APP_PORT (default 8000), for a tunnel to point at.
 
 services:
   app:
@@ -10,10 +11,12 @@ services:
       context: .
       dockerfile: docker/coolify/Dockerfile
     restart: unless-stopped
+    # Published on the server so a tunnel (e.g. Cloudflare Tunnel) can point at it
+    ports:
+      - '${APP_PORT:-8000}:8000'
     environment:
-      # Coolify: generates a domain and routes it to port 8000
-      - SERVICE_URL_APP_8000
-      - APP_URL=${SERVICE_URL_APP}
+      # The public https URL your tunnel serves the app on
+      - APP_URL=${APP_URL:?}
       - APP_FORCE_HTTPS=true
       - TRUSTED_PROXIES=0.0.0.0/0,2000:0:0:0:0:0:0:0/3
 
