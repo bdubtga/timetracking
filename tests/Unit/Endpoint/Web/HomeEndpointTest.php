@@ -15,7 +15,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 #[CoversClass(RedirectIfAuthenticated::class)]
 class HomeEndpointTest extends EndpointTestAbstract
 {
-    public function test_index_redirects_to_dashboard_if_user_is_logged_in(): void
+    public function test_index_redirects_to_shifts_if_user_is_logged_in(): void
     {
         // Arrange
         $user = User::factory()->withPersonalOrganization()->create();
@@ -25,7 +25,7 @@ class HomeEndpointTest extends EndpointTestAbstract
         $response = $this->get('/');
 
         // Assert
-        $response->assertRedirect('/dashboard');
+        $response->assertRedirect('/shifts');
     }
 
     public function test_index_redirects_to_login_if_user_is_not_logged_in(): void
@@ -39,7 +39,7 @@ class HomeEndpointTest extends EndpointTestAbstract
         $response->assertRedirect('/login');
     }
 
-    public function test_login_redirects_to_dashboard_if_user_is_logged_in(): void
+    public function test_login_redirects_to_shifts_if_user_is_logged_in(): void
     {
         // Arrange
         $user = User::factory()->withPersonalOrganization()->create();
@@ -49,6 +49,6 @@ class HomeEndpointTest extends EndpointTestAbstract
         $response = $this->get('/login');
 
         // Assert
-        $response->assertRedirect('/dashboard');
+        $response->assertRedirect('/shifts');
     }
 }

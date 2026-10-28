@@ -61,6 +61,10 @@ import { useCommandPalette } from '@/utils/useCommandPalette';
 
 const { openPalette } = useCommandPalette();
 
+// Simplified sidebar: only Shifts, Calendar and Clients are shown.
+// Set to true to bring back every solidtime page (they still work by URL).
+const showAllFeatures = false;
+
 defineProps({
     title: String,
     mainClass: String,
@@ -160,9 +164,13 @@ const page = usePage<{
                 <div
                     class="border-b border-default-background-separator pb-2 flex items-center gap-1">
                     <div class="flex-1 min-w-0 overflow-hidden">
-                        <OrganizationSwitcher></OrganizationSwitcher>
+                        <OrganizationSwitcher v-if="showAllFeatures"></OrganizationSwitcher>
+                        <div v-else class="px-2 py-1 text-sm font-semibold text-text-primary">
+                            Shifts
+                        </div>
                     </div>
                     <Button
+                        v-if="showAllFeatures"
                         variant="ghost"
                         size="icon"
                         class="h-7 w-7 flex-shrink-0"
@@ -178,7 +186,7 @@ const page = usePage<{
                         <XMarkIcon class="h-4 w-4 text-icon-default" />
                     </Button>
                 </div>
-                <div class="border-b border-default-background-separator">
+                <div v-if="showAllFeatures" class="border-b border-default-background-separator">
                     <CurrentSidebarTimer></CurrentSidebarTimer>
                 </div>
                 <div
@@ -188,7 +196,30 @@ const page = usePage<{
                         scrollbar-color: var(--color-bg-primary) transparent;
                     ">
                     <nav class="pt-2">
-                        <ul>
+                        <ul v-if="!showAllFeatures">
+                            <NavigationSidebarItem
+                                title="Shifts"
+                                :icon="HomeIcon"
+                                :href="route('shifts')"
+                                :current="route().current('shifts')"></NavigationSidebarItem>
+                            <NavigationSidebarItem
+                                title="Calendar"
+                                :icon="CalendarIcon"
+                                :current="route().current('calendar')"
+                                :href="route('calendar')"></NavigationSidebarItem>
+                            <NavigationSidebarItem
+                                v-if="canViewClients()"
+                                title="Clients"
+                                :icon="UserCircleIcon"
+                                :current="route().current('clients')"
+                                :href="route('clients')"></NavigationSidebarItem>
+                        </ul>
+                        <ul v-else>
+                            <NavigationSidebarItem
+                                title="Shifts"
+                                :icon="HomeIcon"
+                                :href="route('shifts')"
+                                :current="route().current('shifts')"></NavigationSidebarItem>
                             <NavigationSidebarItem
                                 title="Dashboard"
                                 :icon="HomeIcon"
@@ -245,84 +276,88 @@ const page = usePage<{
                         </ul>
                     </nav>
 
-                    <div class="text-text-tertiary text-xs font-semibold pt-5 pb-1.5">Manage</div>
+                    <template v-if="showAllFeatures">
+                        <div class="text-text-tertiary text-xs font-semibold pt-5 pb-1.5">
+                            Manage
+                        </div>
 
-                    <nav>
-                        <ul>
-                            <NavigationSidebarItem
-                                v-if="canViewProjects()"
-                                title="Projects"
-                                :icon="FolderIcon"
-                                :href="route('projects')"
-                                :current="route().current('projects')"></NavigationSidebarItem>
-                            <NavigationSidebarItem
-                                v-if="canViewClients()"
-                                title="Clients"
-                                :icon="UserCircleIcon"
-                                :current="route().current('clients')"
-                                :href="route('clients')"></NavigationSidebarItem>
-                            <NavigationSidebarItem
-                                v-if="canViewMembers()"
-                                title="Members"
-                                :icon="UserGroupIcon"
-                                :current="route().current('members')"
-                                :href="route('members')"></NavigationSidebarItem>
-                            <NavigationSidebarItem
-                                v-if="canViewTags()"
-                                title="Tags"
-                                :icon="TagIcon"
-                                :current="route().current('tags')"
-                                :href="route('tags')"></NavigationSidebarItem>
-                            <NavigationSidebarItem
-                                v-if="isInvoicingActivated() && canViewInvoices()"
-                                title="Invoices"
-                                :icon="DocumentTextIcon"
-                                :current="
-                                    route().current('invoices') || route().current('invoices.*')
-                                "
-                                href="/invoices"></NavigationSidebarItem>
-                        </ul>
-                    </nav>
-                    <div
-                        v-if="canUpdateOrganization()"
-                        class="text-text-tertiary text-xs font-semibold pt-5 pb-1.5">
-                        Admin
-                    </div>
+                        <nav>
+                            <ul>
+                                <NavigationSidebarItem
+                                    v-if="canViewProjects()"
+                                    title="Projects"
+                                    :icon="FolderIcon"
+                                    :href="route('projects')"
+                                    :current="route().current('projects')"></NavigationSidebarItem>
+                                <NavigationSidebarItem
+                                    v-if="canViewClients()"
+                                    title="Clients"
+                                    :icon="UserCircleIcon"
+                                    :current="route().current('clients')"
+                                    :href="route('clients')"></NavigationSidebarItem>
+                                <NavigationSidebarItem
+                                    v-if="canViewMembers()"
+                                    title="Members"
+                                    :icon="UserGroupIcon"
+                                    :current="route().current('members')"
+                                    :href="route('members')"></NavigationSidebarItem>
+                                <NavigationSidebarItem
+                                    v-if="canViewTags()"
+                                    title="Tags"
+                                    :icon="TagIcon"
+                                    :current="route().current('tags')"
+                                    :href="route('tags')"></NavigationSidebarItem>
+                                <NavigationSidebarItem
+                                    v-if="isInvoicingActivated() && canViewInvoices()"
+                                    title="Invoices"
+                                    :icon="DocumentTextIcon"
+                                    :current="
+                                        route().current('invoices') || route().current('invoices.*')
+                                    "
+                                    href="/invoices"></NavigationSidebarItem>
+                            </ul>
+                        </nav>
+                        <div
+                            v-if="canUpdateOrganization()"
+                            class="text-text-tertiary text-xs font-semibold pt-5 pb-1.5">
+                            Admin
+                        </div>
 
-                    <nav>
-                        <ul>
-                            <NavigationSidebarItem
-                                v-if="canManageBilling() && isBillingActivated()"
-                                title="Billing"
-                                :icon="CreditCardIcon"
-                                href="/billing"></NavigationSidebarItem>
-                            <NavigationSidebarItem
-                                v-if="canUpdateOrganization()"
-                                title="Import / Export"
-                                :icon="ArrowsRightLeftIcon"
-                                :current="route().current('import')"
-                                :href="route('import')"></NavigationSidebarItem>
-                            <NavigationSidebarItem
-                                v-if="canUpdateOrganization()"
-                                title="Settings"
-                                :icon="Cog6ToothIcon"
-                                :href="
-                                    route(
-                                        'organizations.show',
-                                        page.props.auth.user.current_team.id
-                                    )
-                                "
-                                :current="
-                                    route().current(
-                                        'organizations.show',
-                                        page.props.auth.user.current_team.id
-                                    )
-                                "></NavigationSidebarItem>
-                        </ul>
-                    </nav>
+                        <nav>
+                            <ul>
+                                <NavigationSidebarItem
+                                    v-if="canManageBilling() && isBillingActivated()"
+                                    title="Billing"
+                                    :icon="CreditCardIcon"
+                                    href="/billing"></NavigationSidebarItem>
+                                <NavigationSidebarItem
+                                    v-if="canUpdateOrganization()"
+                                    title="Import / Export"
+                                    :icon="ArrowsRightLeftIcon"
+                                    :current="route().current('import')"
+                                    :href="route('import')"></NavigationSidebarItem>
+                                <NavigationSidebarItem
+                                    v-if="canUpdateOrganization()"
+                                    title="Settings"
+                                    :icon="Cog6ToothIcon"
+                                    :href="
+                                        route(
+                                            'organizations.show',
+                                            page.props.auth.user.current_team.id
+                                        )
+                                    "
+                                    :current="
+                                        route().current(
+                                            'organizations.show',
+                                            page.props.auth.user.current_team.id
+                                        )
+                                    "></NavigationSidebarItem>
+                            </ul>
+                        </nav>
+                    </template>
                 </div>
                 <div class="justify-self-end">
-                    <UpdateSidebarNotification></UpdateSidebarNotification>
+                    <UpdateSidebarNotification v-if="showAllFeatures"></UpdateSidebarNotification>
                     <SidebarPlanStatus v-if="isBillingActivated() && canManageBilling()" />
                     <ul
                         class="border-t border-default-background-separator pt-3 gap-1 flex justify-between items-center">
@@ -358,7 +393,11 @@ const page = usePage<{
                         @click="openSidebar">
                         <PanelLeft class="h-4 w-4 text-icon-default" />
                     </Button>
-                    <div class="flex items-center gap-1">
+                    <div v-if="!showAllFeatures" class="text-sm font-semibold text-text-primary">
+                        {{ title }}
+                    </div>
+                    <div v-if="!showAllFeatures" class="w-7"></div>
+                    <div v-else class="flex items-center gap-1">
                         <OrganizationSwitcher></OrganizationSwitcher>
                         <Button
                             variant="ghost"

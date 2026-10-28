@@ -10,7 +10,7 @@ async function registerNewUser(page, email, password) {
     await page.getByLabel('Confirm Password').fill(password);
     await page.getByLabel('I agree to the Terms of').click();
     await page.getByRole('button', { name: 'Register' }).click();
-    await expect(page.getByTestId('dashboard_view')).toBeVisible();
+    await expect(page.getByTestId('shifts_view')).toBeVisible();
 }
 
 test('can register, logout and log back in', async ({ page }) => {
@@ -18,7 +18,7 @@ test('can register, logout and log back in', async ({ page }) => {
     const email = `john+${Math.round(Math.random() * 10000)}@doe.com`;
     const password = 'suchagreatpassword123';
     await registerNewUser(page, email, password);
-    await expect(page.getByTestId('dashboard_view')).toBeVisible();
+    await expect(page.getByTestId('shifts_view')).toBeVisible();
     await page.getByTestId('current_user_button').click();
     await page.getByText('Log Out').click();
     await page.waitForURL(PLAYWRIGHT_BASE_URL + '/login');
@@ -26,7 +26,7 @@ test('can register, logout and log back in', async ({ page }) => {
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password').fill(password);
     await page.getByRole('button', { name: 'Log in' }).click();
-    await expect(page.getByTestId('dashboard_view')).toBeVisible();
+    await expect(page.getByTestId('shifts_view')).toBeVisible();
 });
 
 test('can register and delete account', async ({ page }) => {
@@ -119,7 +119,7 @@ test('can reset password via email link', async ({ page, request }) => {
     await page.getByLabel('Email').fill(email);
     await page.getByLabel('Password').fill(newPassword);
     await page.getByRole('button', { name: 'Log in' }).click();
-    await expect(page.getByTestId('dashboard_view')).toBeVisible();
+    await expect(page.getByTestId('shifts_view')).toBeVisible();
 });
 
 test('shows validation error for password mismatch on reset', async ({ page, request }) => {

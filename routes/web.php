@@ -38,6 +38,10 @@ Route::middleware([
 ])->group(function (): void {
     Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard');
 
+    Route::get('/shifts', function () {
+        return Inertia::render('Shifts');
+    })->name('shifts');
+
     Route::get('/time', function () {
         return Inertia::render('Time');
     })->name('time');

@@ -1,6 +1,8 @@
 {
-    "name": "solidtime",
-    "short_name": "solidtime",
+    "name": "Shifts",
+    "short_name": "Shifts",
+    "start_url": "/shifts",
+    "scope": "/",
     "icons": [
         {
             "src": "/favicons/android-chrome-192x192.png",
